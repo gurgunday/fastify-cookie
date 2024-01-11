@@ -50,7 +50,6 @@ function fastifyCookieClearCookie (reply, name, options) {
 
 function parseCookies (fastify, request, reply) {
   if (reply[kReplySetCookies]) return
-
   request.cookies = request.raw.headers.cookie ? fastify.parseCookie(request.raw.headers.cookie) : {} // New container per request. Issue #53
   reply[kReplySetCookies] = new Map()
 }
