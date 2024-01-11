@@ -51,9 +51,7 @@ function fastifyCookieClearCookie (reply, name, options) {
 function parseCookies (fastify, request, reply) {
   if (reply[kReplySetCookies]) return
 
-  const cookieHeader = request.raw.headers.cookie
-
-  request.cookies = cookieHeader ? fastify.parseCookie(cookieHeader) : {} // New container per request. Issue #53
+  request.cookies = request.raw.headers.cookie ? fastify.parseCookie(request.raw.headers.cookie) : {} // New container per request. Issue #53
   reply[kReplySetCookies] = new Map()
 }
 
@@ -70,32 +68,34 @@ function onReqHandlerWrapper (fastify, hook) {
 }
 
 function setCookies (reply) {
-  let setCookie = reply.getHeader('Set-Cookie')
-  const setCookieIsUndefined = setCookie === undefined
+  const setCookieHeader = reply.getHeader('Set-Cookie')
 
-  /* istanbul ignore else */
-  if (setCookieIsUndefined) {
-    if (reply[kReplySetCookies].size === 1) {
-      for (const c of reply[kReplySetCookies].values()) {
-        reply.header('Set-Cookie', cookie.serialize(c.name, c.value, c.opts))
-      }
-
-      reply[kReplySetCookies].clear()
-
-      return
+  if (setCookieHeader === undefined && reply[kReplySetCookies].size === 1) {
+    for (const c of reply[kReplySetCookies].values()) {
+      reply.header('Set-Cookie', cookie.serialize(c.name, c.value, c.opts))
     }
 
-    setCookie = []
-  } else if (typeof setCookie === 'string') {
-    setCookie = [setCookie]
+    reply[kReplySetCookies].clear()
+
+    return
+  }
+
+  let cookies
+  let index = 0
+
+  if (typeof setCookieHeader === 'string') {
+    cookies = new Array(reply[kReplySetCookies].size + 1)
+    cookies[index++] = setCookieHeader
+  } else {
+    cookies = new Array(reply[kReplySetCookies].size)
   }
 
   for (const c of reply[kReplySetCookies].values()) {
-    setCookie.push(cookie.serialize(c.name, c.value, c.opts))
+    cookies[index++] = cookie.serialize(c.name, c.value, c.opts)
   }
 
-  if (!setCookieIsUndefined) reply.removeHeader('Set-Cookie')
-  reply.header('Set-Cookie', setCookie)
+  if (setCookieHeader !== undefined) reply.removeHeader('Set-Cookie')
+  reply.header('Set-Cookie', cookies)
   reply[kReplySetCookies].clear()
 }
 
