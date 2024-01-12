@@ -62,8 +62,6 @@ function parse (str, opt) {
   let pos = 0
   let terminatorPos = 0
   let eqIdx = 0
-  let key
-  let val
 
   while (true) {
     if (terminatorPos === strLen) break
@@ -79,10 +77,9 @@ function parse (str, opt) {
       continue
     }
 
-    key = str.slice(pos, eqIdx++).trim() // `eqIdx` becomes the position of `value`
-
+    const key = str.slice(pos, eqIdx++).trim() // `eqIdx` becomes the position of `value`
     if (result[key] === undefined) {
-      val = str.charCodeAt(eqIdx) === 0x22
+      const val = str.charCodeAt(eqIdx) === 0x22
         ? str.slice(eqIdx + 1, terminatorPos - 1).trim() // Only take the value between double quotes
         : str.slice(eqIdx, terminatorPos).trim()
 
