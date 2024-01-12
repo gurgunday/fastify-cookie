@@ -57,42 +57,38 @@ function parse (str, opt) {
     throw new TypeError('argument str must be a string')
   }
 
-  const result = {}
   const dec = opt?.decode || decodeURIComponent
+  const result = {}
 
+  const strLen = str.length
   let pos = 0
   let terminatorPos = 0
   let eqIdx = 0
-  let semi = true
   let key
   let val
 
   while (true) {
-    if (terminatorPos === str.length) {
+    if (pos === strLen) {
       break
     }
 
-    if (semi) {
-      terminatorPos = str.indexOf(';', pos)
-
-      if (terminatorPos === -1) { semi = false; terminatorPos = str.length }
-    }
+    terminatorPos = str.indexOf(';', pos)
+    if (terminatorPos === -1) terminatorPos = strLen // last cookie
 
     eqIdx = str.indexOf('=', pos)
-    // skip things that don't look like key=value
-    if (eqIdx === -1) break
+    if (eqIdx === -1) break // no more valid `key=value` pairs
     if (eqIdx > terminatorPos) {
+      // `key=value` pair is invalid because of the missing `=`
       pos = terminatorPos + 1
       continue
     }
 
-    key = str.substring(pos, eqIdx++).trim()
+    key = str.substring(pos, eqIdx++).trim() // eqIdx becomes the position of `value`
 
-    // only assign once
     if (result[key] === undefined) {
-      val = (str.charCodeAt(eqIdx) === 0x22) // " character
+      val = (str.charCodeAt(eqIdx) === 0x22) // only take value between double quotes
         ? str.substring(eqIdx + 1, terminatorPos - 1).trim()
-        : str.substring(eqIdx, terminatorPos++).trim()
+        : str.substring(eqIdx, terminatorPos++).trim() // terminatorPos becomes the position of the next value, or `strLen` if there is no next value
 
       result[key] = (!(dec === decodeURIComponent && val.indexOf('%') === -1))
         ? tryDecode(val, dec)
