@@ -65,7 +65,6 @@ function parse (str, opt) {
 
   while (true) {
     if (terminatorPos === strLen) break
-
     terminatorPos = str.indexOf(';', pos)
     if (terminatorPos === -1) terminatorPos = strLen // This is the last pair
 
