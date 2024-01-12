@@ -50,8 +50,6 @@ const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/ // eslint-dis
  * @public
  */
 
-parse('asd=asd;;')
-
 function parse (str, opt) {
   if (typeof str !== 'string') {
     throw new TypeError('argument str must be a string')
@@ -67,35 +65,31 @@ function parse (str, opt) {
   let key
   let val
 
-  while (true) {
-    if (pos === strLen) {
-      break
-    }
-
+  while (terminatorPos !== strLen) {
     terminatorPos = str.indexOf(';', pos)
-    if (terminatorPos === -1) terminatorPos = strLen // last cookie
+    if (terminatorPos === -1) terminatorPos = strLen // This is the last pair
 
     eqIdx = str.indexOf('=', pos)
-    if (eqIdx === -1) break // no more valid `key=value` pairs
+    if (eqIdx === -1) break // No more valid `key=value` pairs exist
     if (eqIdx > terminatorPos) {
-      // `key=value` pair is invalid because of the missing `=`
+      // Invalid pair, missing `=`
       pos = terminatorPos + 1
       continue
     }
 
-    key = str.substring(pos, eqIdx++).trim() // eqIdx becomes the position of `value`
+    key = str.slice(pos, eqIdx++).trim() // `eqIdx` becomes the position of `value`
 
     if (result[key] === undefined) {
-      val = (str.charCodeAt(eqIdx) === 0x22) // only take value between double quotes
-        ? str.substring(eqIdx + 1, terminatorPos - 1).trim()
-        : str.substring(eqIdx, terminatorPos++).trim() // terminatorPos becomes the position of the next value, or `strLen` if there is no next value
+      val = str.charCodeAt(eqIdx) === 0x22
+        ? str.slice(eqIdx + 1, terminatorPos - 1).trim() // Only take the value between double quotes
+        : str.slice(eqIdx, terminatorPos).trim()
 
-      result[key] = (!(dec === decodeURIComponent && val.indexOf('%') === -1))
+      result[key] = dec !== decodeURIComponent || val.indexOf('%') !== -1
         ? tryDecode(val, dec)
         : val
     }
 
-    pos = terminatorPos
+    pos = terminatorPos + 1
   }
 
   return result
