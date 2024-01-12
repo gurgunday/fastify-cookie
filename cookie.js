@@ -65,7 +65,9 @@ function parse (str, opt) {
   let key
   let val
 
-  while (terminatorPos !== strLen) {
+  while (true) {
+    if (terminatorPos === strLen) break
+
     terminatorPos = str.indexOf(';', pos)
     if (terminatorPos === -1) terminatorPos = strLen // This is the last pair
 
@@ -84,7 +86,7 @@ function parse (str, opt) {
         ? str.slice(eqIdx + 1, terminatorPos - 1).trim() // Only take the value between double quotes
         : str.slice(eqIdx, terminatorPos).trim()
 
-      result[key] = dec !== decodeURIComponent || val.indexOf('%') !== -1
+      result[key] = !(dec === decodeURIComponent && val.indexOf('%') === -1)
         ? tryDecode(val, dec)
         : val
     }
