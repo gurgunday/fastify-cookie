@@ -74,11 +74,11 @@ function parse (str, opt) {
       continue
     }
 
-    const key = str.slice(pos, eqIdx++).trim() // `eqIdx` becomes the position of `value`
+    const key = str.substring(pos, eqIdx++).trim() // `eqIdx` becomes the position of `value`
     if (result[key] === undefined) {
       const val = str.charCodeAt(eqIdx) === 0x22
-        ? str.slice(eqIdx + 1, terminatorPos - 1).trim() // Only take the value between double quotes
-        : str.slice(eqIdx, terminatorPos).trim()
+        ? str.substring(eqIdx + 1, terminatorPos - 1).trim() // Only take the value between double quotes
+        : str.substring(eqIdx, terminatorPos).trim()
 
       result[key] = !(dec === decodeURIComponent && val.indexOf('%') === -1)
         ? tryDecode(val, dec)
