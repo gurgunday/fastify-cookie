@@ -50,6 +50,8 @@ const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/ // eslint-dis
  * @public
  */
 
+parse('asd=asd;;')
+
 function parse (str, opt) {
   if (typeof str !== 'string') {
     throw new TypeError('argument str must be a string')
@@ -61,36 +63,43 @@ function parse (str, opt) {
   let pos = 0
   let terminatorPos = 0
   let eqIdx = 0
+  let semi = true
+  let key
+  let val
 
   while (true) {
     if (terminatorPos === str.length) {
       break
     }
 
-    terminatorPos = str.indexOf(';', pos)
-    terminatorPos = (terminatorPos === -1) ? str.length : terminatorPos
-    eqIdx = str.indexOf('=', pos)
+    if (semi) {
+      terminatorPos = str.indexOf(';', pos)
 
+      if (terminatorPos === -1) { semi = false; terminatorPos = str.length }
+    }
+
+    eqIdx = str.indexOf('=', pos)
     // skip things that don't look like key=value
-    if (eqIdx === -1 || eqIdx > terminatorPos) {
+    if (eqIdx === -1) break
+    if (eqIdx > terminatorPos) {
       pos = terminatorPos + 1
       continue
     }
 
-    const key = str.substring(pos, eqIdx++).trim()
+    key = str.substring(pos, eqIdx++).trim()
 
     // only assign once
     if (result[key] === undefined) {
-      const val = (str.charCodeAt(eqIdx) === 0x22)
+      val = (str.charCodeAt(eqIdx) === 0x22) // " character
         ? str.substring(eqIdx + 1, terminatorPos - 1).trim()
-        : str.substring(eqIdx, terminatorPos).trim()
+        : str.substring(eqIdx, terminatorPos++).trim()
 
-      result[key] = (dec !== decodeURIComponent || val.indexOf('%') !== -1)
+      result[key] = (!(dec === decodeURIComponent && val.indexOf('%') === -1))
         ? tryDecode(val, dec)
         : val
     }
 
-    pos = terminatorPos + 1
+    pos = terminatorPos
   }
 
   return result
