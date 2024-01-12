@@ -58,13 +58,14 @@ function parse (str, opt) {
   const dec = opt?.decode || decodeURIComponent
   const result = {}
 
+  const strLen = str.length
   let pos = 0
   let terminatorPos = 0
   let eqIdx = 0
   while (true) {
-    if (terminatorPos === str.length) break
+    if (terminatorPos === strLen) break
     terminatorPos = str.indexOf(';', pos)
-    if (terminatorPos === -1) terminatorPos = str.length // This is the last pair
+    if (terminatorPos === -1) terminatorPos = strLen // This is the last pair
 
     eqIdx = str.indexOf('=', pos)
     if (eqIdx === -1) break // No key-value pairs left
