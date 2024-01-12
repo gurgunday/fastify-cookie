@@ -61,13 +61,12 @@ function parse (str, opt) {
   const strLen = str.length
   let pos = 0
   let terminatorPos = 0
-  let eqIdx = 0
   while (true) {
     if (terminatorPos === strLen) break
     terminatorPos = str.indexOf(';', pos)
     if (terminatorPos === -1) terminatorPos = strLen // This is the last pair
 
-    eqIdx = str.indexOf('=', pos)
+    let eqIdx = str.indexOf('=', pos)
     if (eqIdx === -1) break // No key-value pairs left
     if (eqIdx > terminatorPos) {
       // Invalid pair, missing `=`
