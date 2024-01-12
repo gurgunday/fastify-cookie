@@ -67,17 +67,17 @@ function parse (str, opt) {
     if (terminatorPos === -1) terminatorPos = str.length // This is the last pair
 
     eqIdx = str.indexOf('=', pos)
-    if (eqIdx === -1) break // No more valid `key=value` pairs exist
+    if (eqIdx === -1) break // No key-value pairs left
     if (eqIdx > terminatorPos) {
       // Invalid pair, missing `=`
       pos = terminatorPos + 1
       continue
     }
 
-    const key = str.substring(pos, eqIdx++).trim() // `eqIdx` becomes the position of `value`
+    const key = str.substring(pos, eqIdx++).trim()
     if (result[key] === undefined) {
-      const val = str.charCodeAt(eqIdx) === 0x22
-        ? str.substring(eqIdx + 1, terminatorPos - 1).trim() // Only take the value between double quotes
+      const val = str.charCodeAt(eqIdx) === 0x22 // `"`
+        ? str.substring(eqIdx + 1, terminatorPos - 1).trim()
         : str.substring(eqIdx, terminatorPos).trim()
 
       result[key] = !(dec === decodeURIComponent && val.indexOf('%') === -1)
